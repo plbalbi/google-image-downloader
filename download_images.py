@@ -60,15 +60,26 @@ def download_image(out_dir, link):
         r = requests.get("https://www.google.com" + link.get("href"), headers=headers)
     except:
         print("Cannot get link.")
+        pass
     title = str(fromstring(r.content).findtext(".//title"))
     link = title.split(" ")[-1]
 
     # Download the image
     print("Downloading from " + link)
     try:
-        urllib.request.urlretrieve(link, "images/" + link.split("/")[-1])
+        # urllib.request.urlretrieve(link, out_dir+"/" + link.split("/")[-1])
+        # Download image via requests.
+        response = requests.get(link)
+        time.sleep(1)
+        if response.status_code == 200:
+            with open(out_dir+"/"+link.split("/")[-1], 'wb') as f:
+                f.write(response.content)
+        else:
+            print(bcolors.WARNING + "FAILED (STATUS_CODE: " +\
+                    response.status_code +  ": "+ bcolors.ENDC + link)
     except:
         pass
+        print(bcolors.WARNING + "FAILED (try_catch): "+ bcolors.ENDC + link)
 
 if __name__ == "__main__":
     # parse command line options
