@@ -1,3 +1,4 @@
+# coding=utf-8
 import requests
 import time
 import urllib
@@ -9,6 +10,17 @@ from fake_useragent import UserAgent
 from multiprocessing import Pool
 from lxml.html import fromstring
 import os, sys
+from functools import partial
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 def search(url):
     # Create a browser
@@ -39,7 +51,7 @@ def search(url):
 
     return source
 
-def download_image(link):
+def download_image(out_dir, link):
     # Use a random user agent header
     headers = {"User-Agent": ua.random}
 
@@ -71,10 +83,12 @@ if __name__ == "__main__":
     query = args.keyword
     url = "https://www.google.com/search?as_st=y&tbm=isch&as_q=" + query + \
           "&as_epq=&as_oq=&as_eq=&cr=&as_sitesearch=&safe=images&tbs=isz:lt,islt:svga,itp:photo,ift:jpg"
+    # TODO: Poder decir tamaños de imagen, y formato -> va codeado en la url del query
     source = search(url)
 
+    site_code = source.encode('utf-8').decode('ascii', 'ignore')
     # Parse the page source and download pics
-    soup = BeautifulSoup(str(source), "html.parser")
+    soup = BeautifulSoup(site_code, "html.parser")
     ua = UserAgent()
 
     # check directory and create if necessary
@@ -84,6 +98,12 @@ if __name__ == "__main__":
     # get the links
     links = soup.find_all("a", class_="rg_l")
 
+    # pass output directory as additional argument
+    image_getter = partial(download_image, args.keyword)
+
     # open some processes to download
-    with Pool() as pool:
-        pool.map(download_image, links)
+    pool = Pool(processes=4)
+    pool.map(image_getter, links)
+    pool.terminate()
+    # with Pool() as pool:
+        # pool.map(download_image, links)
