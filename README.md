@@ -9,8 +9,6 @@ The following Python packages are required to run the script.
 - fake_useragent
 - beautifulsoup4
 
-You can install then via `pip install -r requirements.txt`
-
 ## Usage
 Once you installed all the packages, run the script with `-h` argument to see how it works
 ```bash
@@ -30,3 +28,17 @@ $ python3 download_images.py <your keyword>
 TODO:
 - Add sudo apt-get install chromium-chromedriver to requierements list... somehow.
 - Then, add chromedriver to PATH export PATH=$PATH:/usr/lib/chromium-browser/
+
+## Installation
+1- Instalar python requirements
+```bash
+pip install -r requirements.txt
+```
+2- Install ChromeDriver 
+```bash
+sudo apt-get install chromium-chromedriver
+```
+3- Add PATH variable to ChromeDriver
+```bash
+export PATH=$PATH:/usr/lib/chromium-browser/
+```
