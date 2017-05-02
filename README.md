@@ -27,3 +27,6 @@ Therefore, to search something, simply type
 ```bash
 $ python3 download_images.py <your keyword>
 ```
+TODO:
+- Add sudo apt-get install chromium-chromedriver to requierements list... somehow.
+- Then, add chromedriver to PATH export PATH=$PATH:/usr/lib/chromium-browser/
