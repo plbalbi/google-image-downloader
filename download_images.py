@@ -12,6 +12,9 @@ from lxml.html import fromstring
 import os, sys
 from functools import partial
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -57,10 +60,10 @@ def download_image(out_dir, link):
 
     # Get the image link
     try:
-        r = requests.get("https://www.google.com" + link.get("href"), headers=headers)
+        r = requests.get("https://www.google.com.ar" + link.get("href"), headers=headers)
     except:
-        print("Cannot get link.")
-        pass
+        print("Cannot get link: ", link.get("href"))
+        return None
     title = str(fromstring(r.content).findtext(".//title"))
     link = title.split(" ")[-1]
 
@@ -75,11 +78,11 @@ def download_image(out_dir, link):
             with open(out_dir+"/"+link.split("/")[-1], 'wb') as f:
                 f.write(response.content)
         else:
-            print(bcolors.WARNING + "FAILED (STATUS_CODE: " +\
+            print(bcolors.FAIL + "FAILED (STATUS_CODE: " +\
                     response.status_code +  ": "+ bcolors.ENDC + link)
     except:
-        pass
-        print(bcolors.WARNING + "FAILED (try_catch): "+ bcolors.ENDC + link)
+        print(bcolors.FAIL + "FAILED (try_catch): "+ bcolors.ENDC + link)
+        return None
 
 if __name__ == "__main__":
     # parse command line options
@@ -92,8 +95,11 @@ if __name__ == "__main__":
 
     # get user input and search on google
     query = args.keyword
-    url = "https://www.google.com/search?as_st=y&tbm=isch&as_q=" + query + \
-          "&as_epq=&as_oq=&as_eq=&cr=&as_sitesearch=&safe=images&tbs=isz:lt,islt:svga,itp:photo,ift:jpg"
+    encoded_query = urllib.quote_plus(query)
+    url = "https://www.google.com.ar/search?as_st=y&tbm=isch&as_q=" + encoded_query + \
+          "&as_epq=&as_oq=&as_eq=&cr=&as_sitesearch=&safe=images&tbs=isz:lt,islt:svga,itp:photo"
+    # url = "https://www.google.com/search?as_st=y&tbm=isch&as_q=" + query + \
+          # "&as_epq=&as_oq=&as_eq=&cr=&as_sitesearch=&safe=images&tbs=isz:lt,islt:svga,itp:photo,ift:bmp"
     # TODO: Poder decir tamaños de imagen, y formato -> va codeado en la url del query
     source = search(url)
 
@@ -103,14 +109,15 @@ if __name__ == "__main__":
     ua = UserAgent()
 
     # check directory and create if necessary
-    if not os.path.isdir(args.keyword):
-        os.makedirs(args.keyword)
+    dest = args.keyword.replace(" ","_")
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
 
     # get the links
     links = soup.find_all("a", class_="rg_l")
 
     # pass output directory as additional argument
-    image_getter = partial(download_image, args.keyword)
+    image_getter = partial(download_image, dest)
 
     # open some processes to download
     pool = Pool(processes=4)
